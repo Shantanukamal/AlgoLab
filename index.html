@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0a0d14" />
+  <meta name="description" content="Explore pathfinding and sorting algorithms with interactive, step-by-step visualizations." />
+  <title>AlgoLab — Interactive DSA Visualizer</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#"><span class="brand-mark">A</span><span>Algo<span class="brand-accent">Lab</span></span></a>
+      <div class="topbar-right"><span class="live-dot"></span><span>INTERACTIVE ALGORITHM LAB</span></div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="eyebrow"><span class="eyebrow-line"></span> PATHFINDING STUDIO</div>
+        <h1>See the algorithm.<br /><span>Understand the path.</span></h1>
+        <p class="hero-copy">Build a maze, choose an algorithm, and watch it explore the grid one node at a time. Start and target are fixed; wall cells cannot be crossed.</p>
+      </section>
+
+      <section class="control-panel">
+        <div class="control-group algorithm-group">
+          <label for="algorithm">ALGORITHM</label>
+          <select id="algorithm">
+            <option value="bfs">Breadth-First Search (BFS)</option>
+            <option value="dfs">Depth-First Search (DFS)</option>
+            <option value="dijkstra">Dijkstra's Algorithm</option>
+            <option value="astar">A* Search</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label for="speed">ANIMATION SPEED</label>
+          <select id="speed">
+            <option value="fast">Fast</option>
+            <option value="normal" selected>Normal</option>
+            <option value="slow">Slow</option>
+          </select>
+        </div>
+        <div class="control-actions">
+          <button id="visualizeBtn" class="btn btn-primary"><span>▶</span> Visualize</button>
+          <button id="mazeBtn" class="btn btn-secondary">Generate Maze</button>
+          <button id="compareBtn" class="btn btn-secondary">Compare All</button>
+          <button id="clearBtn" class="btn btn-ghost">Clear Walls</button>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <div class="board-card">
+          <div class="board-heading">
+            <div><div class="section-kicker">WORKSPACE / 01</div><h2>Grid canvas</h2></div>
+            <div class="board-hint"><span class="hint-icon">↗</span> Click or drag to toggle walls · Enter/Space also works</div>
+          </div>
+          <div id="grid" class="grid" role="group" aria-label="Pathfinding grid"></div>
+          <p class="legend-help">Choose an algorithm and press <strong>Visualize</strong>. “Nodes explored” counts cells removed from the search frontier; path length counts moves from start to target. DFS may return a non-shortest path.</p>
+          <div class="legend">
+            <span><i class="legend-node start-node"></i>Start</span>
+            <span><i class="legend-node end-node"></i>Target</span>
+            <span><i class="legend-node wall-node"></i>Wall</span>
+            <span><i class="legend-node visited-node"></i>Visited</span>
+            <span><i class="legend-node path-node"></i>Shortest path</span>
+          </div>
+        </div>
+
+        <aside class="stats-column">
+          <div class="stat-card featured-stat">
+            <div class="stat-top"><span class="section-kicker">RESULT / 01</span><span class="stat-icon">⌁</span></div>
+            <div class="stat-label">Nodes explored</div>
+            <div id="visitedCount" class="stat-value">—</div>
+            <div class="stat-foot">Nodes checked during search</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top"><span class="section-kicker">RESULT / 02</span><span class="stat-icon">↝</span></div>
+            <div class="stat-label">Path length</div>
+            <div id="pathLength" class="stat-value">—</div>
+            <div class="stat-foot">Steps from start to target</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top"><span class="section-kicker">RESULT / 03</span><span class="stat-icon">◷</span></div>
+            <div class="stat-label">Search status</div>
+            <div id="status" class="status-value" role="status" aria-live="polite">Ready to explore</div>
+            <div class="stat-foot">Choose an algorithm and run it</div>
+          </div>
+          <div class="tip-card"><div class="tip-symbol">✳</div><div><strong>Try this</strong><p>Run BFS and Dijkstra on the same maze. Compare the number of explored nodes.</p></div></div>
+        </aside>
+      </section>
+
+      <section class="learning-strip" aria-label="Pathfinding instructions">
+        <div><span class="section-kicker">HOW TO USE</span><strong>Draw your maze</strong><p>Click or drag across cells to add or erase walls. Start and target cells stay protected.</p></div>
+        <div><span class="section-kicker">COLOR KEY</span><strong>Read the search</strong><p><span class="inline-swatch swatch-start"></span>Start <span class="inline-swatch swatch-target"></span>Target <span class="inline-swatch swatch-wall"></span>Wall <span class="inline-swatch swatch-visited"></span>Visited <span class="inline-swatch swatch-path"></span>Path.</p></div>
+        <div><span class="section-kicker">ALGORITHM TIP</span><strong>Choose a goal</strong><p>BFS guarantees a shortest path on this equal-cost grid. DFS may find a longer route; A* uses Manhattan distance.</p></div>
+      </section>
+
+      <section id="comparisonPanel" class="comparison-panel" hidden>
+        <div class="comparison-heading">
+          <div><div class="section-kicker">BENCHMARK / 01</div><h2>Algorithm comparison</h2></div>
+          <p>Same grid, same start and target. Compare search effort and path length.</p>
+        </div>
+        <div class="table-wrap">
+          <table class="comparison-table">
+            <thead><tr><th>Algorithm</th><th>Nodes explored</th><th>Path length</th><th>Search time</th><th>Result</th></tr></thead>
+            <tbody id="comparisonBody"></tbody>
+          </table>
+        </div>
+        <p class="comparison-footnote">Note: browser timing is approximate and can vary by device. On this unweighted grid, BFS and Dijkstra should find a shortest path; DFS is not guaranteed to.</p>
+      </section>
+
+
+      <section class="sort-studio" id="sortingStudio">
+        <div class="sort-heading">
+          <div>
+            <div class="eyebrow"><span class="eyebrow-line"></span> SORTING STUDIO</div>
+            <h2>Watch order emerge<span>.</span></h2>
+            <p class="hero-copy">Switch from paths to arrays. Compare how sorting algorithms move data and what they cost.</p>
+          </div>
+          <div class="sort-badge">DSA MODULE / 02</div>
+        </div>
+
+        <div class="sort-controls">
+          <div class="control-group algorithm-group">
+            <label for="sortAlgorithm">SORTING ALGORITHM</label>
+            <select id="sortAlgorithm">
+              <option value="bubble">Bubble Sort</option>
+              <option value="selection">Selection Sort</option>
+              <option value="insertion">Insertion Sort</option>
+              <option value="merge">Merge Sort</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label for="sortSpeed">ANIMATION SPEED</label>
+            <select id="sortSpeed">
+              <option value="fast">Fast</option>
+              <option value="normal" selected>Normal</option>
+              <option value="slow">Slow</option>
+            </select>
+          </div>
+          <div class="control-actions">
+            <button id="newArrayBtn" class="btn btn-secondary">New Array</button>
+            <button id="sortBtn" class="btn btn-primary"><span>▶</span> Sort Array</button>
+          </div>
+        </div>
+
+        <div class="sort-layout">
+          <div class="sort-board-card">
+            <div class="board-heading">
+              <div><div class="section-kicker">WORKSPACE / 02</div><h3>Array canvas</h3></div>
+              <div id="sortStatus" class="sort-status" role="status" aria-live="polite">Ready to sort</div>
+            </div>
+            <div id="sortBars" class="sort-bars" role="img" aria-label="Sorting visualization bars" aria-live="off"></div>
+            <div class="sort-legend">
+              <span><i class="bar-key bar-default"></i>Unsorted</span>
+              <span><i class="bar-key bar-active"></i>Being compared</span>
+              <span><i class="bar-key bar-sorted"></i>Sorted</span>
+            </div>
+            <div class="sort-metrics">
+              <div><span class="section-kicker">COMPARISONS</span><strong id="comparisonCount">0</strong></div>
+              <div><span class="section-kicker">WRITES / SWAPS</span><strong id="writeCount">0</strong></div>
+              <div><span class="section-kicker">ARRAY SIZE</span><strong id="arraySize">24</strong></div>
+            </div>
+          </div>
+
+          <aside class="complexity-card">
+            <div class="section-kicker">ALGORITHM PROFILE</div>
+            <h3 id="complexityTitle">Bubble Sort</h3>
+            <p id="complexityDescription">Repeatedly compares adjacent elements and swaps them when they are out of order.</p>
+            <div class="complexity-grid">
+              <div><span>Best time</span><strong id="bestTime">O(n)</strong></div>
+              <div><span>Average time</span><strong id="averageTime">O(n²)</strong></div>
+              <div><span>Worst time</span><strong id="worstTime">O(n²)</strong></div>
+              <div><span>Auxiliary space</span><strong id="spaceTime">O(1)</strong></div>
+            </div>
+            <div class="property-row"><span>Stable</span><strong id="stableProperty">Yes</strong></div>
+            <div class="property-row"><span>In-place</span><strong id="inPlaceProperty">Yes</strong></div>
+            <p class="complexity-note">Complexities describe typical implementations. Counts and animation are measured for this generated array.</p>
+          </aside>
+        </div>
+      </section>
+
+      <section class="bottom-note">
+        <div><span class="bottom-number">01</span><span><strong>Explore</strong><small>Watch nodes get discovered.</small></span></div>
+        <div><span class="bottom-number">02</span><span><strong>Compare</strong><small>Try BFS, DFS, Dijkstra and A*.</small></span></div>
+        <div><span class="bottom-number">03</span><span><strong>Learn</strong><small>Connect the animation to DSA.</small></span></div>
+      </section>
+      <footer><span>ALGOLAB © 2026</span><span>Built to make algorithms visible.</span></footer>
+    </main>
+  </div>
+  <script src="script.js"></script>
+  <script src="sorting.js"></script>
+</body>
+</html>
